@@ -14,6 +14,8 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <string>
+#include <fstream>
+#include <streambuf>
 #include <openssl/sha.h>
 
 #include <sqlite3.h>
@@ -294,6 +296,19 @@ void scan_music_file(sqlite3 * sqldb, string fullpath) {
 				TagLib::FLAC::Picture picture;
 				picture.parse(TagLib::ByteVector(cover.c_str(), cover.size()));
 				cover = string(picture.data().data(), picture.data().size());
+			}
+		}
+	}
+	if (cover.empty()) {
+		int sepidx = fullpath.rfind('/');
+		if(sepidx != std::string::npos)
+		{
+			std::string coverpath = fullpath.erase(sepidx) + "/cover.jpg";
+			std::ifstream coverstream(coverpath);
+			if (coverstream.good())
+			{
+				cover = std::string((std::istreambuf_iterator<char>(coverstream)),
+					std::istreambuf_iterator<char>());
 			}
 		}
 	}
