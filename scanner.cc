@@ -134,7 +134,7 @@ void insert_album(sqlite3 * sqldb, string album, string artist, string cover) {
 	// Check if some other worker is already working/worked in this album.
 	// This is to avoid processing covers more than once (expensive!)
 	uint64_t albumid = calcId(album + "@" + artist, TYPE_ALBUM);
-	if (!cover.empty()) {
+	if (cover.empty()) {
 		std::lock_guard<std::mutex> g(albummutex);
 		if (processed_albums.count(albumid))
 			return;
