@@ -16,6 +16,7 @@
 #include <string>
 #include <fstream>
 #include <streambuf>
+#include <filesystem>
 #include <openssl/sha.h>
 
 #include <sqlite3.h>
@@ -303,12 +304,25 @@ void scan_music_file(sqlite3 * sqldb, string fullpath) {
 		int sepidx = fullpath.rfind('/');
 		if(sepidx != std::string::npos)
 		{
-			std::string coverpath = fullpath.erase(sepidx) + "/cover.jpg";
-			std::ifstream coverstream(coverpath);
-			if (coverstream.good())
+			std::string dirpath = fullpath.erase(sepidx);
+			std::string coverpath;
+			for (const auto & file: std::filesystem::directory_iterator(dirpath))
 			{
-				cover = std::string((std::istreambuf_iterator<char>(coverstream)),
-					std::istreambuf_iterator<char>());
+				std::string filename = file.path().stem();
+				if (filename == "cover" || filename == "folder")
+				{
+					coverpath = file.path();
+					break;
+				}
+			}
+			if (!coverpath.empty())
+			{
+				std::ifstream coverstream(coverpath);
+				if (coverstream.good())
+				{
+					cover = std::string((std::istreambuf_iterator<char>(coverstream)),
+							std::istreambuf_iterator<char>());
+				}
 			}
 		}
 	}
